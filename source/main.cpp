@@ -12,19 +12,23 @@ uint32_t __stacksize__ = 0x100000;
 
 int main() {
     gfxInitDefault();
-    gfxSet3D(true);
+    gfxSet3D(false);
     consoleInit(GFX_BOTTOM, NULL);
     C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
+    romfsInit();
     Thread rendererThread = threadCreate((void(*)(void*))(&::rendererThread),0, 65536, 0x20, -1, false);
-
+    PNG *pngs[17];
+    char buf[32];
+    for(int i=0;i<17;i++) {
+        snprintf((char*)(&buf), 32, "romfs:/pics/loading/frame%02i.png", i);
+        pngs[i] = new PNG(buf);
+    }
     renderers++;
-    renderers->push_back([](unsigned char * vram) -> void {
+    renderers->push_back([pngs](unsigned char * vram) -> void {
                 static int anim_frame=0;
                 static bool direction = false;
                 char buf[32];
-                snprintf((char*)(&buf), 32, "romfs:/pics/loading/frame%02i.png", anim_frame);
-                PNG frame(buf);
-                frame.copyImage(vram);
+                pngs[anim_frame]->copyImage(vram);
                 if(!direction)
                     anim_frame++;
                 else
@@ -42,8 +46,6 @@ int main() {
     renderers--;
 
 
-    if(romfsInit()<0)
-        return -1;
     printf("Starting python\n");
     Py_FrozenFlag=1;
     Py_NoSiteFlag=1;
@@ -53,6 +55,13 @@ int main() {
     FILE *pyinit=fopen("romfs:/init.py","rb");
     PyRun_SimpleFile(pyinit, "romfs:/init.py");
     PyRun_SimpleString("import tick");
+
+    renderers++;
+    renderers->clear();
+    renderers--;
+    for(int i=0;i<17;i++) {
+        delete pngs[i];
+    }
 
     while(aptMainLoop()) {
         hidScanInput();

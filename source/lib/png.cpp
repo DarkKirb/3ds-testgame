@@ -55,6 +55,7 @@ PNG::~PNG() {
     for(int i=0;i<height;i++)
         delete[] row_pointers[i];
     delete[] row_pointers;
+    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 }
 unsigned char* PNG::copyImage(bool linear) {
     int pixel_width = bit_depth/8;
@@ -72,8 +73,7 @@ unsigned char* PNG::copyImage(bool linear) {
 }
 
 void PNG::copyImage(void *dest) {
-    int pixel_width = bit_depth/8;
-    int line_width = pixel_width * width;
+    int line_width = png_get_rowbytes(png_ptr, info_ptr);
     for(int i=0;i<height;i++)
         memcpy(dest+line_width*i, row_pointers[i], line_width);
 }
