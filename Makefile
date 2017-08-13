@@ -47,14 +47,14 @@ CFLAGS	:=	-g -Wall -O2 -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections -w -Wno-unused -Wno-unused-variable -Wno-reorder -Werror \
 			$(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
+CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS -I$(DEVKITPRO)/portlibs/armv6k/include/
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
 ASFLAGS	:=	-g $(ARCH)
-LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
+LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map) -L$(DEVKITPRO)/portlibs/armv6k/lib/
 
-LIBS	:= -lctru -lcitro3d -lm ../libs/libpython3.7m.a 
+LIBS	:= -lcitro3dd -lctrud -lm ../libs/libpython3.7m.a -lpng -lz
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
